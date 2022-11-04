@@ -5,8 +5,13 @@ import 'package:shared_preferences/shared_preferences.dart';
 FlutterBluePlus flutterBlue = FlutterBluePlus.instance;
 
 
+// NEED TO CHECK TOGGLE IF DEVICE IS ALREADY CONNECTED TO PREVENT A REBUILD STATE ERROR??????
+
 class DeviceSearchPage extends StatefulWidget {
-  const DeviceSearchPage({super.key});
+
+  final ValueChanged<List<BluetoothDevice>> onConnectedDeviceChange;
+
+  const DeviceSearchPage({Key? key, required this.onConnectedDeviceChange}) : super(key : key);
 
   @override
   State<DeviceSearchPage> createState() => _DeviceSearchPageState();
@@ -14,6 +19,7 @@ class DeviceSearchPage extends StatefulWidget {
 
 class _DeviceSearchPageState extends State<DeviceSearchPage> {
   List<ScanResult>? allFoundDevices;
+  List<BluetoothDevice>? allConnecedDevices;
   List<String>? allConnectedDeviceNames;
   List<bool>? deviceConnectedList = [];
 
@@ -21,40 +27,37 @@ class _DeviceSearchPageState extends State<DeviceSearchPage> {
     allFoundDevices = null;
     flutterBlue.startScan(timeout: const Duration(seconds: 4));
     flutterBlue.scanResults.listen((bluetoothDevices) {
-      setState(() {
-        allFoundDevices = bluetoothDevices;
-      });
+      // THIS NEEDS TO BE CHECKED
+      if (this.mounted) {
+        setState(() {
+          allFoundDevices = bluetoothDevices;
+        });
+      }
     });
     flutterBlue.stopScan();
   }
 
-  void toggleConnectedDevice(bool connectStatus) {
+  void toggleConnectedDevice(bool connectStatus, BluetoothDevice device) async {
     print("Connection Status is: ");
     print(connectStatus.toString());
-  }
 
-  /*Future<void> saveConnectedDevice(String deviceName) async {
-    final prefs = await SharedPreferences.getInstance();
+    List<BluetoothDevice> connectedDevices = await FlutterBluePlus.instance.connectedDevices;
 
-    allConnectedDeviceNames!.add(deviceName); // only add device name to list if deviceName is not null
-
-    await prefs.setStringList('SavedDevices', allConnectedDeviceNames);
-  }*/
-
-  // Need to connect to a device
-
-  Future<List<BluetoothCharacteristic>> _getCharacteristics(
-      BluetoothDevice device,) async {
-    await device.connect();
-    final services = await device.discoverServices();
-    final res = List<BluetoothCharacteristic>.empty(growable: true);
-    for (var i = 0; i < services.length; i++) {
-      res.addAll(services[i].characteristics);
-      print(services[i].characteristics);
+    if (connectedDevices.contains(device)){
+      print("ALREADY CONNECTED! GOING TO DISCONNECT!");
+      await device.disconnect();
     }
-    device.disconnect();
-    return res;
+    else {
+      await device.connect();
+    }
+
+
+    // TODO:I NEED TO ACTUALLY POPULATE THIS LIST WITH A DEVICE OR ELSE THE PROGRAM WILL CRASH
+    widget.onConnectedDeviceChange(connectedDevices);
+
   }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -70,7 +73,7 @@ class _DeviceSearchPageState extends State<DeviceSearchPage> {
                     deviceName: allFoundDevices![index].device.name,
                     deviceID: allFoundDevices![index].device.id.id,
                     onDeviceConnectedToggle: (toggleStatus) {
-                      toggleConnectedDevice(toggleStatus);
+                      toggleConnectedDevice(toggleStatus, allFoundDevices![index].device);
                     });
               })),
       floatingActionButton: FloatingActionButton.extended(
