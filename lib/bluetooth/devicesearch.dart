@@ -49,6 +49,10 @@ class _DeviceSearchPageState extends State<DeviceSearchPage> {
     }
     else {
       await device.connect();
+      print("Successfully connected to ${device.name}");
+      print("${device.name} id is ${device.id}");
+      print("${device.name} type is ${device.type}");
+
     }
 
 
