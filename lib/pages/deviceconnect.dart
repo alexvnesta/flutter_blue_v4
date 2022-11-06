@@ -20,12 +20,27 @@ class _DeviceConnectPageState extends State<DeviceConnectPage> {
   List<String> savedDeviceMacAddresses = [];
 
 
+  //List<String> ids = await getData(favId);
+  //ids.add("id");
+  //saveData(savedDeviceMacAddresses, favId);
 
-  void saveConnectedDevices(List<BluetoothDevice> deviceList){
+  void saveData(List<String> ids, String favId) async {
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    pref.setStringList(favId, ids);
+  }
+
+  Future<List<String>?> getData(favId) async {
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    return pref.getStringList("Bluetooth Devices");
+  }
+
+  Future<void> saveConnectedDevices(List<BluetoothDevice> deviceList) async {
     for (BluetoothDevice device in deviceList){
       print(device.id.id.toString());
-      savedDeviceMacAddresses.add(device.id.id);
+      savedDeviceMacAddresses.add(device.id.id.toString());
     }
+    saveData(savedDeviceMacAddresses, "Bluetooth Devices");
+    savedDeviceMacAddresses = (await getData("Bluetooth Devices"))!;
     for (String deviceID in savedDeviceMacAddresses){
       print("Successfully saved $deviceID");
     }
@@ -33,19 +48,15 @@ class _DeviceConnectPageState extends State<DeviceConnectPage> {
 
 
 
-  void reconnectSavedDevices(List<String> savedDeviceIDs) async{
-
-    for (var deviceID in savedDeviceIDs) {
-
+  void reconnectSavedDevices() async{
+    List<String>? savedBTDevicesIDs = await getData("Bluetooth Devices");
+    for (var deviceID in savedBTDevicesIDs!) {
       print("going to connect to device $deviceID");
-
       var protoBt = ProtoBluetoothDevice.BluetoothDevice(
           remoteId: deviceID
       );
       late var d = BluetoothDevice.fromProto(protoBt);
-
       await d.connect();
-
     }
   }
 
@@ -121,7 +132,7 @@ class _DeviceConnectPageState extends State<DeviceConnectPage> {
                 )),
             ElevatedButton(
                 onPressed: () async {
-                  reconnectSavedDevices(savedDeviceMacAddresses);
+                  reconnectSavedDevices();
                   connectedDevicesList =
                       await FlutterBluePlus.instance.connectedDevices;
                   print("READ DEVICES AND REFRESHING PAGE!");
