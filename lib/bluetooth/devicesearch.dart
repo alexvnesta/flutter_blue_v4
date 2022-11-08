@@ -28,7 +28,7 @@ class _DeviceSearchPageState extends State<DeviceSearchPage> {
     flutterBlue.startScan(timeout: const Duration(seconds: 4));
     flutterBlue.scanResults.listen((bluetoothDevices) {
       // THIS NEEDS TO BE CHECKED
-      if (this.mounted) {
+      if (mounted) {
         setState(() {
           allFoundDevices = bluetoothDevices;
         });
@@ -44,7 +44,6 @@ class _DeviceSearchPageState extends State<DeviceSearchPage> {
     List<BluetoothDevice> connectedDevices = await FlutterBluePlus.instance.connectedDevices;
 
     if (connectedDevices.contains(device)){
-      print("ALREADY CONNECTED! GOING TO DISCONNECT!");
       await device.disconnect();
     }
     else {
@@ -52,7 +51,6 @@ class _DeviceSearchPageState extends State<DeviceSearchPage> {
       print("Successfully connected to ${device.name}");
       print("${device.name} id is ${device.id}");
       print("${device.name} type is ${device.type}");
-
     }
 
 
@@ -69,17 +67,16 @@ class _DeviceSearchPageState extends State<DeviceSearchPage> {
       appBar: AppBar(
         title: const Text("Device Connect"),
       ),
-      body: Container(
-          child: ListView.builder(
-              itemCount: allFoundDevices?.length ?? 0,
-              itemBuilder: (context, index) {
-                return DeviceListTile(
-                    deviceName: allFoundDevices![index].device.name,
-                    deviceID: allFoundDevices![index].device.id.id,
-                    onDeviceConnectedToggle: (toggleStatus) {
-                      toggleConnectedDevice(toggleStatus, allFoundDevices![index].device);
-                    });
-              })),
+      body: ListView.builder(
+          itemCount: allFoundDevices?.length ?? 0,
+          itemBuilder: (context, index) {
+            return DeviceListTile(
+                deviceName: allFoundDevices![index].device.name,
+                deviceID: allFoundDevices![index].device.id.id,
+                onDeviceConnectedToggle: (toggleStatus) {
+                  toggleConnectedDevice(toggleStatus, allFoundDevices![index].device);
+                });
+          }),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
           findDevices();
@@ -103,7 +100,7 @@ class DeviceListTile extends StatefulWidget {
       : super(key: key);
 
   @override
-  _DeviceListTileState createState() => new _DeviceListTileState();
+  _DeviceListTileState createState() => _DeviceListTileState();
 }
 
 class _DeviceListTileState extends State<DeviceListTile> {

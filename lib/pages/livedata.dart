@@ -28,9 +28,9 @@ class _LiveDataPageState extends State<LiveDataPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Live Gyro Readout"),
+        title: const Text("Live Gyro Readout"),
       ),
-      body: Center(
+      body: const Center(
         child: Text('Live Data Goes here'),
       ),
     );
