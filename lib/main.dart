@@ -3,6 +3,7 @@ import 'pages/deviceconnect.dart';
 import 'pages/homepage.dart';
 import 'pages/livedata.dart';
 import 'pages/settings.dart';
+import 'pages/vehicleProfile.dart';
 
 void main() {
   runApp(const MyApp());
@@ -35,7 +36,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   static final List<Widget> _widgetOptions = <Widget>[
     const HomePage(),
-    const LiveDataPage(),
+    LiveDataPage(vehicle: Vehicle(),),
     const DeviceConnectPage(),
     const SettingsPage(),
   ];

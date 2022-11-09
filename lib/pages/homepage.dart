@@ -12,12 +12,19 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  List? listOfVehicles;
-  final vehicle = Vehicle();
+  List<Vehicle> listOfVehicles = [];
   SaveLoad saveLoad = SaveLoad();
+
+  initialVehicleLoad() async {
+    listOfVehicles = await saveLoad.loadVehicleData();
+    setState(() {
+
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
+    initialVehicleLoad();
     return Scaffold(
       appBar: AppBar(
         title: const Text("CLRacing Alignment Tool"),
@@ -31,9 +38,9 @@ class _HomePageState extends State<HomePage> {
               child: SizedBox(
                   height: 200.0,
                   child: ListView.builder(
-                    itemCount: listOfVehicles?.length ?? 0,
+                    itemCount: listOfVehicles.length ?? 0,
                     itemBuilder: (context, index) {
-                      return VehicleTile(title: listOfVehicles![index].carName, subtitle: listOfVehicles![index].alignmentName);
+                      return VehicleTile(title: listOfVehicles[index].carName, subtitle: listOfVehicles[index].alignmentName, vehicle: listOfVehicles[index]);
                     },
                   )),
             ),
@@ -46,10 +53,10 @@ class _HomePageState extends State<HomePage> {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => VehicleEntryForm(onVehicleSubmitted: (vehicleSubmittedTrue) {
-                setState(() async {
-                  print("REFRESHING ADDED VEHICLE");
-                  listOfVehicles = await saveLoad.loadVehicleData(vehicle);
+              builder: (context) => VehicleEntryForm(onVehicleSubmitted: (vehicleSubmittedTrue) async {
+                print("REFRESHING ADDED VEHICLE");
+                listOfVehicles = await saveLoad.loadVehicleData();
+                setState(() {
                 });
               },),
             ),
@@ -67,8 +74,9 @@ class VehicleTile extends StatefulWidget {
 
   String title;
   String subtitle;
+  Vehicle vehicle;
 
-  VehicleTile({Key? key, this.title = "VehicleTitle", this.subtitle = "alignmentTitle"}) : super(key: key);
+  VehicleTile({Key? key, this.title = "VehicleTitle", this.subtitle = "alignmentTitle", required this.vehicle}) : super(key: key);
 
   @override
   State<VehicleTile> createState() => _VehicleTileState();
@@ -83,7 +91,12 @@ class _VehicleTileState extends State<VehicleTile> {
       trailing: const Text("Check alignment",
           style: TextStyle(
               fontWeight: FontWeight.bold, color: Colors.black, fontSize: 18)),
-      onTap: () => print("MOVE TO LIVE DATA SCREEN WITH THE PROPER SETTINGS"),
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => LiveDataPage(vehicle: widget.vehicle,),
+        ),
+      ),
     );
   }
 }

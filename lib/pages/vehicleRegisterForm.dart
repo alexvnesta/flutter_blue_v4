@@ -90,8 +90,8 @@ class _VehicleEntryFormState extends State<VehicleEntryForm> {
                 }),
             ElevatedButton(
                 onPressed: () {
-                  //saveLoad.saveVehicleData(_vehicle);
-                  //widget.onVehicleSubmitted(true);
+                  saveLoad.saveVehicleData(_vehicle);
+                  widget.onVehicleSubmitted(true);
                   Navigator.pop(
                     context,
                     MaterialPageRoute(

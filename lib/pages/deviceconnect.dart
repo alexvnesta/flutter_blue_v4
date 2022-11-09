@@ -40,8 +40,16 @@ class _DeviceConnectPageState extends State<DeviceConnectPage> {
     }
   }
 
+  initialDeviceNamesLoad() {
+    reconnectSavedDevices();
+    setState(() {
+
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    initialDeviceNamesLoad();
     return Scaffold(
       appBar: AppBar(
         title: const Text("Device Connect"),

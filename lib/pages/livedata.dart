@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
-
+import 'vehicleProfile.dart';
 
 class LiveDataPage extends StatefulWidget {
-  const LiveDataPage({super.key});
+
+  var vehicle;
+
+  LiveDataPage({super.key, this.vehicle });
+
 
   @override
   State<LiveDataPage> createState() => _LiveDataPageState();

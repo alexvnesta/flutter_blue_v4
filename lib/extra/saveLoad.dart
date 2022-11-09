@@ -1,8 +1,8 @@
-import 'package:flutter_blue_v4/pages/vehicleProfile.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../pages/vehicleProfile.dart';
 
 class SaveLoad {
+
 
   void saveData(List<String> ids, String favId) async {
     SharedPreferences pref = await SharedPreferences.getInstance();
@@ -14,33 +14,44 @@ class SaveLoad {
     return pref.getStringList("Bluetooth Devices");
   }
 
-  Future<List> loadVehicleData(vehicle) async {
-    //final Vehicle vehicle;
-
-    //final vehicle;
+  Future<List<Vehicle>> loadVehicleData() async {
 
     final SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    final String? vehiclesString = prefs.getString('Vehicle List');
+    List<Vehicle> vehicles = [Vehicle()];
 
-    //this random vehicle variable might not have this method because some values may be null? IDK. THIS IS KINDA WEIRD.
-    final List vehicles = vehicle.decode(vehiclesString!);
+    // THIS IS A BIT OF A HACK. SINCE THERE IS NO SAVE HISTORY, WE NEED TO MAKE A DEFAULT VEHICLE LIST.
+    final String vehiclesString = prefs.getString('VehicleList') ?? Vehicle.encode(vehicles);
+
+
+
+    print("printing vehicles string");
+    print(vehiclesString);
+
+
+    vehicles = Vehicle.decode(vehiclesString!);
 
     return vehicles;
 
   }
 
-  void saveVehicleData(vehicle) async {
+  void saveVehicleData(Vehicle vehicleLocal) async {
 
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    List vehicleList = await loadVehicleData(vehicle);
+    print("About to save this vehicle");
+    print(vehicleLocal.carName);
 
-    vehicleList.add(vehicle);
+    List<Vehicle> vehicleList = [];
+    vehicleList = await loadVehicleData();
 
-    final String encodedData = vehicle.encode(vehicleList);
+    print("Loaded vehicle data");
 
-    await prefs.setString('Vehicle List', encodedData);
+    vehicleList.add(vehicleLocal);
+
+    final String encodedData = Vehicle.encode(vehicleList);
+
+    await prefs.setString('VehicleList', encodedData);
 
   }
 
