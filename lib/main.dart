@@ -4,6 +4,9 @@ import 'pages/homepage.dart';
 import 'pages/livedata.dart';
 import 'pages/settings.dart';
 import 'pages/vehicleProfile.dart';
+import 'extra/saveLoad.dart';
+
+
 
 void main() {
   runApp(const MyApp());
@@ -32,12 +35,29 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  SaveLoad? saveLoad;
+
   int _selectedIndex = 0;
+
+  Vehicle currentlySelectedVehicle = Vehicle();
+
+  void setActiveProfile() async {
+    currentlySelectedVehicle = await saveLoad?.loadActiveAlignmentProfile() ?? Vehicle();
+  }
+
+  @override
+  void initState()  {
+    // TODO: implement initState
+    super.initState();
+    //setActiveProfile();
+    // WHENEVER THE HOMEPAGE IS REBUILT, get the currently selected vehicle.
+  }
 
   static final List<Widget> _widgetOptions = <Widget>[
     const HomePage(),
-    LiveDataPage(vehicle: Vehicle(),),
+    LiveDataPage(vehicle: Vehicle()),
     const DeviceConnectPage(),
+    //FunForm(),
     const SettingsPage(),
   ];
 

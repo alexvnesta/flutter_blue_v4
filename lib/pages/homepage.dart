@@ -15,50 +15,78 @@ class _HomePageState extends State<HomePage> {
   List<Vehicle> listOfVehicles = [];
   SaveLoad saveLoad = SaveLoad();
 
-  initialVehicleLoad() async {
-    listOfVehicles = await saveLoad.loadVehicleData();
-    setState(() {
+  void loadVehicleData() async {
+    listOfVehicles = await saveLoad.loadVehicleData() ?? [];
+  }
 
-    });
+  initState() {
+    loadVehicleData();
+    setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
-    initialVehicleLoad();
+    //initialVehicleLoad();
     return Scaffold(
       appBar: AppBar(
         title: const Text("CLRacing Alignment Tool"),
       ),
       body: Center(
         child: Column(
-          children: <Widget> [
+          children: <Widget>[
             const Text('Welcome to the alignment app!'),
             const Icon(Icons.car_repair, color: Colors.red, size: 200),
+            ElevatedButton(
+                onPressed: () {
+                  saveLoad.deleteSavedVehicles();
+                  listOfVehicles = [];
+                  setState(() {});
+                },
+                child: Text("DELETE SAVED PROFILES")),
+            ElevatedButton(
+                onPressed: () async {
+                  listOfVehicles = await saveLoad.loadVehicleData() ?? [];
+                  setState(() {});
+                },
+                child: Text("LOAD SAVED PROFILES")),
             Expanded(
-              child: SizedBox(
-                  height: 200.0,
-                  child: ListView.builder(
-                    itemCount: listOfVehicles.length ?? 0,
-                    itemBuilder: (context, index) {
-                      return VehicleTile(title: listOfVehicles[index].carName, subtitle: listOfVehicles[index].alignmentName, vehicle: listOfVehicles[index]);
-                    },
-                  )),
+              child: ListView.builder(
+                itemCount: listOfVehicles.length ?? 0,
+                itemBuilder: (context, index) {
+                  return Dismissible(
+                      key: ValueKey<Vehicle>(listOfVehicles[index]),
+                      background: Container(
+                        color: Colors.red,
+                        child: const Icon(Icons.cancel),
+                      ),
+                      child: VehicleTile(
+                          title: listOfVehicles[index].carName,
+                          subtitle: listOfVehicles[index].alignmentName,
+                          vehicle: listOfVehicles[index]),
+                      onDismissed: (dismissDirection) {
+                        setState(() {
+                          listOfVehicles.removeAt(index);
+                          saveLoad.saveAllCurrentVehicles(listOfVehicles);
+                        });
+                      });
+                },
+              ),
             ),
           ],
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
-          print("ADD A NEW VEHICLE");
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => VehicleEntryForm(onVehicleSubmitted: (vehicleSubmittedTrue) async {
-                print("REFRESHING ADDED VEHICLE");
-                listOfVehicles = await saveLoad.loadVehicleData();
-                setState(() {
-                });
-              },),
+              builder: (context) => VehicleEntryForm(
+                onVehicleSubmitted: (vehicleSubmittedTrue) async {
+                  listOfVehicles = await saveLoad.loadVehicleData() ?? [];
+                  print(listOfVehicles.toString());
+                  setState(() {});
+                },
+              ),
             ),
           );
         },
@@ -71,18 +99,25 @@ class _HomePageState extends State<HomePage> {
 }
 
 class VehicleTile extends StatefulWidget {
-
   String title;
   String subtitle;
   Vehicle vehicle;
 
-  VehicleTile({Key? key, this.title = "VehicleTitle", this.subtitle = "alignmentTitle", required this.vehicle}) : super(key: key);
+  VehicleTile(
+      {Key? key,
+      this.title = "VehicleTitle",
+      this.subtitle = "alignmentTitle",
+      required this.vehicle})
+      : super(key: key);
 
   @override
   State<VehicleTile> createState() => _VehicleTileState();
 }
 
 class _VehicleTileState extends State<VehicleTile> {
+
+  SaveLoad? saveLoad;
+
   @override
   Widget build(BuildContext context) {
     return ListTile(
@@ -91,12 +126,20 @@ class _VehicleTileState extends State<VehicleTile> {
       trailing: const Text("Check alignment",
           style: TextStyle(
               fontWeight: FontWeight.bold, color: Colors.black, fontSize: 18)),
-      onTap: () => Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => LiveDataPage(vehicle: widget.vehicle,),
-        ),
-      ),
+      onTap: () {
+
+        //saveLoad?.saveActiveAlignmentProfile(widget.vehicle);
+        //print("Loading live data with: ${widget.vehicle.carName}");
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) =>
+                LiveDataPage(
+                  vehicle: widget.vehicle,
+                ),
+          ),
+        );
+      }
     );
   }
 }

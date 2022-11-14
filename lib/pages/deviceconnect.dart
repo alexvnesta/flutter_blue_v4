@@ -5,6 +5,8 @@ import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:flutter_blue_plus/gen/flutterblueplus.pb.dart'
     as ProtoBluetoothDevice;
 
+import '../microcontroller/selectWheel.dart';
+
 class DeviceConnectPage extends StatefulWidget {
   const DeviceConnectPage({super.key});
 
@@ -16,7 +18,6 @@ class _DeviceConnectPageState extends State<DeviceConnectPage> {
   List<BluetoothDevice>? connectedDevicesList;
   List<String> savedDeviceMacAddresses = [];
   SaveLoad saveLoad = SaveLoad();
-
 
   Future<void> saveConnectedDevices(List<BluetoothDevice> deviceList) async {
     for (BluetoothDevice device in deviceList) {
@@ -31,20 +32,21 @@ class _DeviceConnectPageState extends State<DeviceConnectPage> {
   }
 
   void reconnectSavedDevices() async {
-    List<String>? savedBTDevicesIDs = await saveLoad.getData("Bluetooth Devices");
-    for (var deviceID in savedBTDevicesIDs!) {
-      print("going to connect to device $deviceID");
-      var protoBt = ProtoBluetoothDevice.BluetoothDevice(remoteId: deviceID);
-      late var d = BluetoothDevice.fromProto(protoBt);
-      await d.connect();
+    List<String>? savedBTDevicesIDs =
+        await saveLoad.getData("Bluetooth Devices") ?? [];
+    if (savedBTDevicesIDs!.isNotEmpty) {
+      for (var deviceID in savedBTDevicesIDs!) {
+        print("going to connect to device $deviceID");
+        var protoBt = ProtoBluetoothDevice.BluetoothDevice(remoteId: deviceID);
+        late var d = BluetoothDevice.fromProto(protoBt);
+        await d.connect();
+      }
     }
   }
 
   initialDeviceNamesLoad() {
     reconnectSavedDevices();
-    setState(() {
-
-    });
+    setState(() {});
   }
 
   @override
@@ -117,7 +119,7 @@ class _DeviceConnectPageState extends State<DeviceConnectPage> {
                 onPressed: () async {
                   reconnectSavedDevices();
                   connectedDevicesList =
-                  await FlutterBluePlus.instance.connectedDevices;
+                      await FlutterBluePlus.instance.connectedDevices;
                   print("READ DEVICES AND REFRESHING PAGE!");
 
                   setState(() {});
@@ -159,13 +161,18 @@ class ConnectedDeviceListTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      title: Text(device.name),
-      subtitle: Text(device.id.id),
-      trailing: const Text("FORGET DEVICE",
-          style: TextStyle(
-              fontWeight: FontWeight.bold, color: Colors.red, fontSize: 18)),
-      onTap: () => disconnectDevice(device),
+    return Column(
+      children: [
+        ListTile(
+          title: Text(device.name),
+          subtitle: Text(device.id.id),
+          trailing: const Text("FORGET DEVICE",
+              style: TextStyle(
+                  fontWeight: FontWeight.bold, color: Colors.red, fontSize: 18)),
+          onTap: () => disconnectDevice(device),
+        ),
+        WheelSelection(),
+      ],
     );
   }
 }
